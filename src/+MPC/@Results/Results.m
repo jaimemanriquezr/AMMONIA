@@ -84,6 +84,8 @@ classdef Results
             end
         end
 
+        bf_line = plotBiofilm(obj, plot_options, t, options)
+
 
 
     end
