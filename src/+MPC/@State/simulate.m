@@ -2,12 +2,13 @@ function results = simulate(obj, parameters)
 arguments
     obj MPC.State
     parameters.InflowConcentrations = []
-    parameters.SimulationTime (1,1) {mustBeNumeric} = 1;
-    parameters.TimeStep (1,1) = "adaptive";
+    parameters.SimulationTime (1,1) {mustBeNumeric} = 1.0;
+    parameters.TimeStep (1,1) = 1E-5;
     parameters.FrameNumber (1,1) {mustBeNumeric} = 200;
     parameters.CloggingFraction (1,1) {mustBeNumeric} = .99;
     parameters.IsUpwinded (1,1) = false;
 end
+disp("Loading parameters...")
 filter = obj.SandFilter;
 model = obj.Model;
 
@@ -136,15 +137,8 @@ counter = counter + 1;
 %=========================================================================%
 
 %=============== VI. TIME INTEGRATION ====================================%
-if isnumeric(timeStep)
-    adaptivity = "none";
-    dt = timeStep;
-    results.SimulationData.TimeStep = dt;
-else
-    adaptivity = timeStep;
-    dt = parameters.AdaptiveTimeStepInitialValue;
-    results.SimulationData.TimeStep = "time adapted";
-end
+dt = timeStep;
+results.SimulationData.TimeStep = dt;
 
 t = timeStart;
 muRates = reshape(model.Reactions.computeRate(temperature), 1, []);
@@ -159,6 +153,7 @@ lightFactor = ones(length(filter.GridPoints.Centers), length(model.Reactions));
 if isnumeric(inflowConcentrations)
     globalConcInflow = [inflowConcentrations(:)].';
 end
+disp("Starting simulation...")
 while t < timeStart + simulationTime
     if isa(inflowConcentrations, 'function_handle')
         globalConcInflow = inflowConcentrations(t);
@@ -196,7 +191,7 @@ while t < timeStart + simulationTime
     %% LOCAL CONCENTRATIONS
     localBiofilmX = globalMatrix./(phiBiofilm + realmin);
     % localBiofilmX(isnan(localBiofilmX)) = 0;
-    localBiofilmS = globalEnclosedL./(phiBiofilm + realmin); 
+    localBiofilmS = globalEnclosedL./(phiBiofilm + realmin);
     % localBiofilmS(isnan(localBiofilmS)) = 0;
     localBiofilmXS = [localBiofilmX, localBiofilmS];
     localBiofilmQuotients = localBiofilmXS(:, quotientNumIdx) ./ (localBiofilmXS(:, quotientDenIdx) + realmin);
@@ -380,9 +375,12 @@ while t < timeStart + simulationTime
         velFramesBiofilm(:, counter, :) = velBiofilm;
         velFramesFlowing(:, counter, :) = velFlowing(2:end-1);
         counter = counter + 1;
+        fprintf("t = %.4e\n", t);
     end
     %==========================================================%
 end
+disp("Simulation ended.")
+disp("Saving results...")
 
 %====================== VII. OUTPUTS ===================%
 results.Frames.time = timeFrames;
@@ -411,6 +409,7 @@ results.Frames.Velocity.Biofilm = velFramesBiofilm;
 results.Frames.Velocity.Flowing = velFramesFlowing;
 
 results.TimeFinal = t;
+disp("Results saved.")
 end
 
 function rx = evaluateReactions(local, K, phi, mu, I, orders)
