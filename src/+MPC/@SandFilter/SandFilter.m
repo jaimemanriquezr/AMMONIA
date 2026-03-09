@@ -17,10 +17,6 @@ classdef SandFilter
     end
     
     properties (Dependent, Hidden)
-        domain
-        epsilon
-        delta
-        
         GridSize
         GridZero
         
@@ -38,38 +34,13 @@ classdef SandFilter
                 input.Temperature (1,1) {mustBeNumeric} = 15 + 273;
                 input.LightIrradiation = @(t) 0.8 * max(sin(2*pi*(t - 13/48)) + 31/50, 0) / (1 + 31/50);
                 input.LightAttenuationCoeffWater = 0.32;
-                input.LightAttenuationCoeffSand = 1000;
+                input.LightAttenuationCoeffSand = 1500;
                 input.GridPoints = [];
             end
 
             for field = string(fieldnames(input).')
                 obj.(field) = input.(field);
             end
-        end
-        
-        function D = get.domain(obj)
-            D = [-obj.Height, obj.Depth];
-        end
-
-        function obj = set.domain(obj, D)
-            obj.Height = -D(1);
-            obj.Depth = D(2);
-        end
-        
-        function e = get.epsilon(obj)
-            e = obj.SandPorosity;
-        end
-
-        function obj = set.epsilon(obj, e)
-            obj.SandPorosity = e;
-        end
-
-        function d = get.delta(obj)
-            d = obj.SandRoughness;
-        end
-
-        function obj = set.delta(obj, d)
-            obj.SandRoughness = d;
         end
         
         function dz = get.GridSize(obj)
