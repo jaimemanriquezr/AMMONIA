@@ -1,19 +1,20 @@
 classdef Model
     properties
         Components (:, 1)
-        
-        BiofilmPorosity
-        OsmosisRate
-        DetachmentFunction
+
+        WaterDensity double = 998
+        BiofilmPorosity double
+        OsmosisRate double
+        DetachmentFunction function_handle
 
         Reactions = MPC.ecological.Reaction.empty;
         CohesionSubModel = MPC.cohesion.CahnHilliardModel()
     end
-    
+
     properties (Dependent, Hidden)
         Particles
         Liquids
-        
+
         StoichiometricCoefficients
         HalfSaturationConstants
         Order
@@ -32,11 +33,12 @@ classdef Model
                 input.MobilityFunction function_handle = @(u) u .* (1 - u);
                 input.PotentialGradient function_handle = @(u) 0.25*((u.^2).*((1 - u).^2));
 
-                input.DetachmentFunction = @(v, qnom) sqrt(abs(v)/qnom);
-                input.OsmosisRate = 1e-5;
-                input.BiofilmPorosity = .99;
+                input.WaterDensity double = 998;
+                input.DetachmentFunction function_handle = @(v, qnom) sqrt(abs(v)/qnom);
+                input.OsmosisRate double = 1e-5;
+                input.BiofilmPorosity double = .99;
 
-                input.Reactions = MPC.ecological.Reaction.empty;               
+                input.Reactions = MPC.ecological.Reaction.empty;
                 input.Preset = string.empty;
             end
             switch input.Preset
@@ -59,7 +61,7 @@ classdef Model
                     error("Unknown model preset.");
             end
         end
-        
+
         function p = get.Particles(obj)
             p = obj.Components(arrayfun(@(C)isa(C, 'MPC.ecological.Particle'), obj.Components));
         end
@@ -71,7 +73,7 @@ classdef Model
         function sigma = get.StoichiometricCoefficients(obj)
             sigma = obj.Reactions.lookupStoichiometricCoefficients(obj.Components);
         end
-        
+
         function sigma = get.StoichiometricMatrixParticles(obj)
             sigma = obj.Reactions.lookupStoichiometricCoefficients(obj.Particles);
         end
@@ -87,7 +89,7 @@ classdef Model
         function p = get.Order(obj)
             p = obj.Reactions.lookupOrder(obj.Components);
         end
-        
+
         mu = computeReactionRates(obj, temperature);
     end
 end

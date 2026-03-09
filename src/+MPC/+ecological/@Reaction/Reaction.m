@@ -6,6 +6,8 @@ classdef Reaction
         Order dictionary
         HalfSaturationConstants dictionary
         StoichiometricCoefficients dictionary
+        EfficiencyBiofilm double = 1.0
+        EfficiencyFlowing double = 1.0
         IsLightDependent logical
         MinimumLightFactor double
         OptimalLightFactor double
@@ -20,6 +22,8 @@ classdef Reaction
                 input.Order dictionary = dictionary("", 0);
                 input.HalfSaturationConstants dictionary = dictionary("", 0)
                 input.StoichiometricCoefficients dictionary = dictionary("", 0)
+                input.EfficiencyBiofilm double = 1.0;
+                input.EfficiencyFlowing double = 1.0;
                 input.IsLightDependent logical = false
                 input.MinimumLightFactor double = 0.0;
                 input.OptimalLightFactor double = 0.0;
